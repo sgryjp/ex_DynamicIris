@@ -69,38 +69,9 @@ namespace ConsoleApp1
 
     class DynamicallyTypedExample
     {
-        public class DynamicVector : IEnumerable<object>
-        {
-            readonly object[] _values;
-
-            public DynamicVector(IEnumerable<object> values)
-            {
-                _values = values.ToArray();
-            }
-
-            public int Length { get { return _values.Length; } }
-
-            public object this[int i] { get { return _values[i]; } }
-
-            #region IEnumerable
-            public IEnumerator<object> GetEnumerator()
-            {
-                foreach (var value in _values)
-                {
-                    yield return value;
-                }
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-            #endregion
-        }
-
         public class DynamicMatrix : IDataView
         {
-            readonly DynamicVector[] _data;
+            readonly object[][] _data;
 
             public DynamicMatrix(object[][] data, IEnumerable<string> columnNames)
             {
@@ -144,11 +115,11 @@ namespace ConsoleApp1
                 Schema = builder.ToSchema();
 
                 // Reference all values ensuring its type
-                var rows = new List<DynamicVector>();
+                var rows = new List<object[]>();
                 foreach (var row in data)
                 {
                     //TODO: Check data type consistency here
-                    rows.Add(new DynamicVector(row));
+                    rows.Add(row);
                 }
                 _data = rows.ToArray();
             }
