@@ -247,25 +247,28 @@ namespace DynamicIris
             },
             inputColumnNames);
             var prediction = transformerChain.Transform(newSamples);
-            var cursor = prediction.GetRowCursor(prediction.Schema);
-            var getFeatures = cursor.GetGetter<VBuffer<float>>(prediction.Schema[featuresColumnName]);
-            var getPredictedLabel = cursor.GetGetter<UInt32>(prediction.Schema["PredictedLabel"]);
-            var getScore = cursor.GetGetter<VBuffer<float>>(prediction.Schema["Score"]);
-            Console.WriteLine("[Prediction]");
-            while (cursor.MoveNext())
+            using (var cursor = prediction.GetRowCursor(prediction.Schema))
             {
-                var features = new VBuffer<float>();
-                UInt32 predictedLabel = 0;
-                var score = new VBuffer<float>();
 
-                getFeatures(ref features);
-                getPredictedLabel(ref predictedLabel);
-                getScore(ref score);
-                Console.WriteLine("    Input Feature:   {0}", string.Join(", ", features.DenseValues()));
-                Console.WriteLine("    Predicted Label: {0}", predictedLabel);
-                Console.WriteLine("    Score:           {0}", string.Join(", ", score.DenseValues()));
+                var getFeatures = cursor.GetGetter<VBuffer<float>>(prediction.Schema[featuresColumnName]);
+                var getPredictedLabel = cursor.GetGetter<UInt32>(prediction.Schema["PredictedLabel"]);
+                var getScore = cursor.GetGetter<VBuffer<float>>(prediction.Schema["Score"]);
+                Console.WriteLine("[Prediction]");
+                while (cursor.MoveNext())
+                {
+                    var features = new VBuffer<float>();
+                    UInt32 predictedLabel = 0;
+                    var score = new VBuffer<float>();
+
+                    getFeatures(ref features);
+                    getPredictedLabel(ref predictedLabel);
+                    getScore(ref score);
+                    Console.WriteLine("    Input Feature:   {0}", string.Join(", ", features.DenseValues()));
+                    Console.WriteLine("    Predicted Label: {0}", predictedLabel);
+                    Console.WriteLine("    Score:           {0}", string.Join(", ", score.DenseValues()));
+                }
+                Console.WriteLine();
             }
-            Console.WriteLine();
         }
     }
 }
