@@ -28,10 +28,10 @@ namespace ConsoleApp1
         public class ClusterPrediction
         {
             [ColumnName("PredictedLabel")]
-            public uint PredictedClusterId;
+            public uint PredictedClusterId { get; set; }
 
             [ColumnName("Score")]
-            public float[] Distances;
+            public float[] Distances { get; set; }
         }
 
         public static IDataView LoadIrisStatic(MLContext ctx, string filePath)
