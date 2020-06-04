@@ -101,15 +101,24 @@ namespace DynamicIris
                         var column = _owner.Schema[i];
                         if (column.Type == NumberDataViewType.Single)
                         {
-                            getters.Add(new ValueGetter<float>((ref float value) => { value = (float)_owner._data[_rowIndex][column.Index]; }));
+                            getters.Add(new ValueGetter<float>((ref float value) =>
+                            {
+                                value = (float)_owner._data[_rowIndex][column.Index];
+                            }));
                         }
                         else if (column.Type == DateTimeDataViewType.Instance)
                         {
-                            getters.Add(new ValueGetter<DateTime>((ref DateTime value) => { value = (DateTime)_owner._data[_rowIndex][column.Index]; }));
+                            getters.Add(new ValueGetter<DateTime>((ref DateTime value) =>
+                            {
+                                value = (DateTime)_owner._data[_rowIndex][column.Index];
+                            }));
                         }
                         else if (column.Type == TextDataViewType.Instance)
                         {
-                            getters.Add(new ValueGetter<string>((ref string value) => { value = (string)_owner._data[_rowIndex][column.Index]; }));
+                            getters.Add(new ValueGetter<ReadOnlyMemory<char>>((ref ReadOnlyMemory<char> value) =>
+                            {
+                                value = (ReadOnlyMemory<char>)_owner._data[_rowIndex][column.Index];
+                            }));
                         }
                         else
                         {
