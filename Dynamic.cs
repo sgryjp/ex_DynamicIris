@@ -17,13 +17,17 @@ namespace DynamicIris
             public DynamicMatrix(object[][] data, IEnumerable<string> columnNames)
             {
                 // Check arguments
-                if (data == null)
+                if (data is null)
                 {
-                    throw new ArgumentNullException("data");
+                    throw new ArgumentNullException(nameof(data));
                 }
                 if (data.Length == 0)
                 {
                     throw new ArgumentException("Input data must contains at least 1 row");
+                }
+                if (columnNames is null)
+                {
+                    throw new ArgumentNullException(nameof(columnNames));
                 }
 
                 // Determine data type of each column from the first row
@@ -92,7 +96,7 @@ namespace DynamicIris
 
                 public Cursor(DynamicMatrix owner)
                 {
-                    _owner = owner;
+                    _owner = owner ?? throw new ArgumentNullException(nameof(owner));
                     _rowIndex = -1;
 
                     var getters = new List<Delegate>();
@@ -138,7 +142,7 @@ namespace DynamicIris
                 {
                     if (_getters.Length <= column.Index)
                     {
-                        throw new Exception();
+                        throw new ArgumentOutOfRangeException();
                     }
                     return (ValueGetter<TValue>)_getters[column.Index];
                 }
@@ -167,6 +171,15 @@ namespace DynamicIris
 
         public static IDataView LoadIris(MLContext ctx, string filePath)
         {
+            if (ctx is null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException("message", nameof(filePath));
+            }
+
             // Read CSV file content as object[][] holding typed elements (not strings)
             var columnNames = new List<string>();
             var dataRows = new List<object[]>();
@@ -207,6 +220,15 @@ namespace DynamicIris
 
         public static void DoClustering(MLContext ctx, IDataView data)
         {
+            if (ctx is null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             // Prepare to make a column which contains a vector made from "{sepal|petal}x{length|width}"
             var featuresColumnName = "Features";
             var inputColumnNames = data.Schema.Take(data.Schema.Count - 1).Select(s => s.Name).ToArray();

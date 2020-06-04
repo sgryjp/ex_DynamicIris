@@ -17,16 +17,29 @@ namespace DynamicIris
             public float PetalLength { get; set; }
             [LoadColumn(3)]
             public float PetalWidth { get; set; }
-            //public int Target { get; set; }
         }
 
         public static IDataView LoadIrisStatic(MLContext ctx, string filePath)
         {
+            if (ctx is null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+
             return ctx.Data.LoadFromTextFile<IrisRecord>(filePath, separatorChar: ',');
         }
 
         public static void DoClustering(MLContext ctx, IDataView data)
         {
+            if (ctx is null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             var columnNames = new[] { "SepalLength", "SepalWidth", "PetalLength", "PetalWidth" }; // Preknown information
             var featuresColumnName = "Features";
             var trainer = ctx.Clustering.Trainers.KMeans(
