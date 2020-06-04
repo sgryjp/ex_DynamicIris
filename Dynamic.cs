@@ -49,7 +49,7 @@ namespace DynamicIris
                     }
                     else if (firstValue is string)
                     {
-                        type = TextDataViewType.Instance;
+                        type = TextDataViewType.Instance; // This is not for String but for ReadOnlyMemory<char>
                     }
                     else
                     {
@@ -61,9 +61,19 @@ namespace DynamicIris
 
                 // Reference all values ensuring its type
                 var rows = new List<object[]>();
-                foreach (var row in data)
+                for (var i = 0; i<data.Length; i++)
                 {
-                    //TODO: Check data type consistency here
+                    var row = data[i].ToArray(); // Shallow copy this row so that we can safely swap its elements
+
+                    for (var j = 0; j<row.Length; j++)
+                    {
+                        if (Schema[j].Type == TextDataViewType.Instance)
+                        {
+                            row[j] = new ReadOnlyMemory<char>(((string)row[j]).ToCharArray());
+                        }
+                        //TODO: We should check type consistency here for other data types
+                    }
+
                     rows.Add(row);
                 }
                 _data = rows.ToArray();
