@@ -60,8 +60,8 @@ namespace DynamicIris
             };
             Console.WriteLine("[Prediction]");
             var prediction = predictor.Predict(newSample);
-            Console.WriteLine("    Cluster: {0}", prediction.PredictedClusterId);
-            Console.WriteLine("    Distances: {0}", string.Join(" ", prediction.Distances));
+            Console.WriteLine("    Cluster: {0}", prediction.PredictedLabel);
+            Console.WriteLine("    Distances: {0}", string.Join(" ", prediction.Score));
             Console.WriteLine();
         }
     }

@@ -6,11 +6,8 @@ namespace DynamicIris
 {
     class ClusterPrediction
     {
-        [ColumnName("PredictedLabel")]
-        public uint PredictedClusterId { get; set; }
-
-        [ColumnName("Score")]
-        public float[] Distances { get; set; }
+        public uint PredictedLabel { get; set; }
+        public float[] Score { get; set; }
     }
 
     class Program
