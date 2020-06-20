@@ -1,4 +1,4 @@
-﻿using Microsoft.ML;
+using Microsoft.ML;
 using Microsoft.ML.Data;
 using System;
 using System.Linq;
@@ -7,6 +7,12 @@ namespace DynamicIris
 {
     static class Static
     {
+        class ClusterPrediction
+        {
+            public uint PredictedLabel { get; set; }
+            public float[] Score { get; set; }
+        }
+
         public class IrisRecord
         {
             [LoadColumn(0)]
@@ -19,7 +25,7 @@ namespace DynamicIris
             public float PetalWidth { get; set; }
         }
 
-        public static IDataView LoadIrisStatic(MLContext ctx, string filePath)
+        public static IDataView LoadIris(MLContext ctx, string filePath)
         {
             if (ctx is null)
             {

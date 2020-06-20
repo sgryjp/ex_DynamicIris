@@ -1,4 +1,4 @@
-﻿using Microsoft.ML;
+using Microsoft.ML;
 using Microsoft.ML.Data;
 using System;
 using System.Collections.Generic;
@@ -179,7 +179,7 @@ namespace DynamicIris
             }
         }
 
-        public static IDataView LoadIris(MLContext ctx, string filePath)
+        public static IDataView LoadCsv(MLContext ctx, string filePath)
         {
             if (ctx is null)
             {

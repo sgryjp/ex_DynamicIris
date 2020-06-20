@@ -1,15 +1,8 @@
-﻿using Microsoft.ML;
-using Microsoft.ML.Data;
+using Microsoft.ML;
 using System;
 
 namespace DynamicIris
 {
-    class ClusterPrediction
-    {
-        public uint PredictedLabel { get; set; }
-        public float[] Score { get; set; }
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -19,7 +12,7 @@ namespace DynamicIris
             var ctx = new MLContext();
 
             Console.WriteLine("------ Statically typed example ------");
-            data = Static.LoadIrisStatic(ctx, filePath);
+            data = Static.LoadIris(ctx, filePath);
             Console.WriteLine("[Loaded Data]");
             foreach (var column in data.Schema)
             {
@@ -28,7 +21,7 @@ namespace DynamicIris
             Static.DoClustering(ctx, data);
 
             Console.WriteLine("------ Dynamically typed example ------");
-            data = Dynamic.LoadIris(ctx, filePath);
+            data = Dynamic.LoadCsv(ctx, filePath);
             Console.WriteLine("[Loaded Data]");
             foreach (var column in data.Schema)
             {
