@@ -1,4 +1,4 @@
-using Microsoft.ML;
+﻿using Microsoft.ML;
 using Microsoft.ML.Data;
 using System;
 using System.Collections.Generic;
@@ -61,11 +61,11 @@ namespace DynamicIris
 
                 // Reference all values ensuring its type
                 var rows = new List<object[]>();
-                for (var i = 0; i<data.Length; i++)
+                for (var i = 0; i < data.Length; i++)
                 {
                     var row = data[i].ToArray(); // Shallow copy this row so that we can safely swap its elements
 
-                    for (var j = 0; j<row.Length; j++)
+                    for (var j = 0; j < row.Length; j++)
                     {
                         if (Schema[j].Type == TextDataViewType.Instance)
                         {
@@ -309,6 +309,114 @@ namespace DynamicIris
                     Console.WriteLine("    Score:           {0}", string.Join(", ", score.DenseValues()));
                 }
                 Console.WriteLine();
+            }
+        }
+
+        static string[] AskUserToSelectColumnNames(IEnumerable<string> choices, string prompt)
+        {
+            var targetColumnNames = new List<string>();
+            var availableColumnNames = choices.ToArray();
+            Console.WriteLine("Available Columns: ", string.Join(", ", availableColumnNames));
+            for (var i = 0; i < availableColumnNames.Length; i++)
+            {
+                Console.WriteLine("[{0}] {1}", i + 1, availableColumnNames[i]);
+            }
+            Console.Write($"{prompt}: ");
+            foreach (var token in Console.ReadLine().Split(','))
+            {
+                if (int.TryParse(token.Trim(), out int number))
+                {
+                    var index = number - 1;
+                    if (0 <= index && index < availableColumnNames.Length)
+                    {
+                        targetColumnNames.Add(availableColumnNames[index]);
+                    }
+                }
+            }
+            return targetColumnNames.ToArray();
+        }
+
+        public static void InteractiveRegression(MLContext mlContext, string filePath)
+        {
+            // Load data
+            var rawInputData = Dynamic.LoadCsv(mlContext, filePath);
+            var availableColumnNames = rawInputData.Schema
+                .Select(column => column.Name)
+                .ToArray();
+
+            // Ask user to select label column and feature columns
+            var featureColumnNames = AskUserToSelectColumnNames(
+                availableColumnNames,
+                "Please select feature columns (e.g.: \"1,3\")");
+            var labelColumnName = AskUserToSelectColumnNames(
+                availableColumnNames,
+                "Please select a label column (e.g.: \"2\")").FirstOrDefault();
+            Console.WriteLine(
+                "Input: {0}",
+                string.Join(", ", featureColumnNames.Select(s => '"' + s + '"')));
+            Console.WriteLine(
+                "Output: \"{0}\"",
+                string.Join(", ", labelColumnName));
+
+            // Create a preprocessing pipeline
+            var preprocessor = mlContext.Transforms
+                .Concatenate("Features", featureColumnNames)
+                .Append(mlContext.Transforms.CopyColumns("Label", labelColumnName))
+                .Append(mlContext.Transforms.SelectColumns("Features", "Label"));
+
+            Console.WriteLine("Using Regression.CrossValidate()");
+            if (true)
+            {
+                var preprocessed = preprocessor.Fit(rawInputData).Transform(rawInputData);
+                var trainer = mlContext.Regression.Trainers.LightGbm(
+                    labelColumnName: "Label",
+                    featureColumnName: "Features");
+                var cvResult = mlContext.Regression.CrossValidate(
+                    data: preprocessed,
+                    estimator: trainer,
+                    numberOfFolds: 5,
+                    labelColumnName: "Label");
+                foreach (var result in cvResult)
+                {
+                    var model = result.Model;
+                    Console.WriteLine(
+                        "    R2={0:0.000000}, MAE={1:0.000000}, MSE={2:0.000000}, RMSE={3:0.000000}",
+                        result.Metrics.RSquared,
+                        result.Metrics.MeanAbsoluteError,
+                        result.Metrics.RootMeanSquaredError,
+                        result.Metrics.RootMeanSquaredError);
+                }
+            }
+
+            Console.WriteLine("Using Data.CrossValidationSplit()");
+            if (true)
+            {
+                var actualValues = rawInputData.GetColumn<float>(rawInputData.Schema[labelColumnName]).ToArray();
+                var folds = mlContext.Data.CrossValidationSplit(rawInputData);
+                foreach (var fold in folds)
+                {
+                    var trainSet = preprocessor.Fit(fold.TrainSet).Transform(fold.TrainSet);
+                    var testSet = preprocessor.Fit(fold.TestSet).Transform(fold.TestSet);
+
+                    var trainer = mlContext.Regression.Trainers.LightGbm(
+                        labelColumnName: "Label",
+                        featureColumnName: "Features");
+                    var model = trainer.Fit(
+                        trainData: trainSet,
+                        validationData: testSet);
+                    var predictions = model.Transform(testSet);
+                    var metrics = mlContext.Regression.Evaluate(
+                        data: predictions,
+                        labelColumnName: "Label",
+                        scoreColumnName: "Score"); // See reference of LightGbm()
+                    var predictedValues = predictions.GetColumn<float>(predictions.Schema["Label"]).ToArray();
+                    Console.WriteLine(
+                        "    R2={0:0.000000}, MAE={1:0.000000}, MSE={2:0.000000}, RMSE={3:0.000000}",
+                        metrics.RSquared,
+                        metrics.MeanAbsoluteError,
+                        metrics.RootMeanSquaredError,
+                        metrics.RootMeanSquaredError);
+                }
             }
         }
     }

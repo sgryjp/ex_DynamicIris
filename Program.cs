@@ -1,4 +1,4 @@
-using Microsoft.ML;
+﻿using Microsoft.ML;
 using System;
 
 namespace DynamicIris
@@ -28,6 +28,9 @@ namespace DynamicIris
                 Console.WriteLine($"    {column.Name} <{column.Type} ({column.Type.RawType})>");
             }
             Dynamic.DoClustering(ctx, data);
+
+            Console.WriteLine("------ Interactive example of dynamically typed regression using LightGBM ------");
+            Dynamic.InteractiveRegression(ctx, filePath);
         }
 
     }
